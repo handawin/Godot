@@ -1,0 +1,77 @@
+extends Sprite2D  
+# ▶ Sprite2D 노드를 상속해서 이 스크립트가 그 객체의 동작을 정의함.
+# ▶ "extends"는 "확장"이라는 뜻으로, 부모 클래스(Super class)를 물려받겠다는 의미.
+
+var speed = 200  
+# ▶ 캐릭터의 이동 속도를 담는 변수.
+# ▶ 숫자가 커질수록 캐릭터가 빨리 움직여.
+# ▶ 속도 단위는 '픽셀/초'라고 생각하면 됨.
+
+var qkdgid = "none"  
+# ▶ 캐릭터가 바라보는 방향을 기억하는 변수.
+# ▶ flip_h(좌우반전) 처리를 위해 필요함.
+# ▶ 보통은 "last_direction" 같은 이름을 쓰지만, 아무 이름이나 써도 작동은 됨.
+
+func _process(delta):  
+# ▶ 프레임마다 자동으로 호출되는 함수. delta는 시간 간격(초)임.
+# ▶ 언더바(_) 붙여야 Godot 엔진이 자동으로 실행해 줌. 'process'만 쓰면 실행 안 됨 ❗️
+# ▶ delta는 "이 프레임에서 지난 시간"을 의미해서, 부드러운 이동 계산할 때 꼭 필요해.
+
+	var dawin = Vector2.ZERO  
+	# ▶ (0, 0) 벡터. 나중에 입력 방향(x, y) 넣을 거임.
+	# ▶ 이동 벡터라고 보면 됨.
+
+	if Input.is_action_pressed("ui_up"):  
+	# ▶ "ui_up"이라는 키가 계속 눌려있으면 true.
+	# ▶ 키보드 ↑ 키 기본으로 연결돼 있음 (프로젝트 세팅에서 바꿀 수 있음)
+	# ❗️ 헷갈릴 점: is_action_just_pressed()는 '막 눌렀을 때만 true'임. 여긴 계속 눌리는 중 검사.
+
+		dawin.y -= 1  # ▶ 위로 이동. Godot은 Y축이 아래로 갈수록 +라서, 위로 가려면 -1.
+		qkdgid = "up"  # ▶ 현재 방향 저장.
+
+	if Input.is_action_pressed("ui_down"):
+		dawin.y += 1  # ▶ 아래로 이동. y값 증가.
+		qkdgid = "down"
+
+	if Input.is_action_pressed("ui_right"):
+		dawin.x += 1  # ▶ 오른쪽 이동.
+		qkdgid = "right"
+
+	if Input.is_action_pressed("ui_left"):
+		dawin.x -= 1  # ▶ 왼쪽 이동.
+		qkdgid = "left"
+
+	if dawin != Vector2.ZERO:  
+	# ▶ 방향 벡터가 (0,0)이 아니면 — 즉, 키 입력이 있음.
+	# ▶ 아무 방향도 안 누르면 Vector2.ZERO 그대로임.
+		play_anim(1)  # ▶ 이동 중이므로 Run 애니메이션 실행.
+	else:
+		play_anim(0)  # ▶ 정지 상태면 idle 애니메이션 실행.
+
+	position += dawin.normalized() * speed * delta  
+	# ▶ 실제 위치 이동.
+	# ▶ normalized(): 방향만 유지하면서 길이를 1로 만듦. (대각선 이동 시 너무 빨라지는 걸 막기 위해)
+	# ▶ speed: 속도 곱함. delta: 프레임 간 시간 곱함 (프레임 속도와 상관없이 일정하게 이동)
+	# ❗️헷갈릴 점: normalized() 안 쓰면 대각선 이동할 때 1.4배 빨라짐 (피타고라스 거리)
+
+func play_anim(movement):  
+# ▶ 애니메이션을 재생하는 함수.
+# ▶ movement == 1이면 Run, movement == 0이면 idle.
+
+	if movement == 1:
+		$AnimatedSprite2D.play("Run")  
+		# ▶ 애니메이션 이름이 "Run"인 걸 실행.
+		# ▶ 에디터에서 AnimatedSprite2D 노드에 애니메이션 설정해놔야 함 ❗️
+
+	elif movement == 0:
+		$AnimatedSprite2D.play("idle")  
+		# ▶ 움직이지 않으면 idle 애니메이션 실행.
+
+	if qkdgid == "right":
+		$AnimatedSprite2D.flip_h = false  
+		# ▶ 오른쪽이면 flip_h(좌우 반전) 하지 않음 (기본 방향이 오른쪽인 경우)
+
+	else:
+		$AnimatedSprite2D.flip_h = true  
+		# ▶ 그 외는 모두 왼쪽이라 판단하고 반전
+		# ❗️헷갈릴 점: flip_h는 true면 좌우 반전임. false면 원래 방향.
