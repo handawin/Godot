@@ -41,18 +41,14 @@ func _process(delta):
 		dawin.x -= 1  # ▶ 왼쪽 이동.
 		qkdgid = "left"
 
-	if dawin != Vector2.ZERO:  
-	# ▶ 방향 벡터가 (0,0)이 아니면 — 즉, 키 입력이 있음.
-	# ▶ 아무 방향도 안 누르면 Vector2.ZERO 그대로임.
-		play_anim(1)  # ▶ 이동 중이므로 Run 애니메이션 실행.
+	if dawin != Vector2.ZERO: #만약 백터가 제로가 아니라면( !=는 아니라면임)
+		play_anim(1)
+		velocity = input_dir.normalized() * speed
 	else:
-		play_anim(0)  # ▶ 정지 상태면 idle 애니메이션 실행.
-
-	position += dawin.normalized() * speed * delta  
-	# ▶ 실제 위치 이동.
-	# ▶ normalized(): 방향만 유지하면서 길이를 1로 만듦. (대각선 이동 시 너무 빨라지는 걸 막기 위해)
-	# ▶ speed: 속도 곱함. delta: 프레임 간 시간 곱함 (프레임 속도와 상관없이 일정하게 이동)
-	# ❗️헷갈릴 점: normalized() 안 쓰면 대각선 이동할 때 1.4배 빨라짐 (피타고라스 거리)
+		play_anim(0)
+		velocity = Vector2.ZERO
+	
+	move_and_slide()
 
 func play_anim(movement):  
 # ▶ 애니메이션을 재생하는 함수.
